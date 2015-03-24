@@ -57,8 +57,15 @@
     }
 
     [dataFormatterISO setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"];
+    NSDate *date = [dataFormatterISO dateFromString:dateString];
     
-    return [self stringForDate:[dataFormatterISO dateFromString:dateString]];
+    if ( !date )
+    {
+        [dataFormatterISO setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss'+00:00'"];
+        date = [dataFormatterISO dateFromString:dateString];
+    }
+    
+    return [self stringForDate:date];
 }
 
 -(NSString *)revertDateRFC:(NSString *)dateString

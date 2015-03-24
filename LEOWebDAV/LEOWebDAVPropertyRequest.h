@@ -21,6 +21,19 @@ typedef enum {
 	LEOWebDAVPropertyAllProperties = 4095
 } LEOWebDAVProperties;
 
+typedef enum {
+    LEOWebDAVPropertyRequestDepthAll,
+    LEOWebDAVPropertyRequestDepthOnlyRequestItem,
+    LEOWebDAVPropertyRequestDepthOnlyChildrenFirstLevel,
+    LEOWebDAVPropertyRequestDepthOnlyChildrenInfinityLevel
+} LEOWebDAVPropertyRequestDepth;
+
+
+
 @interface LEOWebDAVPropertyRequest : LEOWebDAVRequest
+
+@property (nonatomic) LEOWebDAVPropertyRequestDepth depth;
+
+- (id)initWithPath:(NSString *)aPath depth:(LEOWebDAVPropertyRequestDepth)depth;
 
 @end

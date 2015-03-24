@@ -11,32 +11,30 @@
 #import "LEOWebDAVParser.h"
 #import "LEOWebDAVItem.h"
 
-@interface LEOWebDAVPropertyRequest ()
-{
-    NSUInteger _depth;
-}
-@end
 
 @implementation LEOWebDAVPropertyRequest
 
-- (id)initWithPath:(NSString *)aPath {
-	self = [super initWithPath:aPath];
-	if (self) {
-		_depth = 1;
-	}
-	return self;
+- (id)initWithPath:(NSString *)aPath
+{
+    return [self initWithPath:aPath depth:LEOWebDAVPropertyRequestDepthOnlyRequestItem];
+}
+
+- (id)initWithPath:(NSString *)aPath depth:(LEOWebDAVPropertyRequestDepth)depth
+{
+    if (self = [super initWithPath:aPath])
+    {
+        _depth = depth;
+    }
+    
+    return self;
 }
 
 -(NSURLRequest *)request
 {
     NSMutableURLRequest *req=[self newRequestWithPath:self.path method:@"PROPFIND"];
 //    NSLog(@"request url=%@",req.URL);
-    if (_depth>1) {
-        [req setValue:@"infinity" forHTTPHeaderField:@"Depth"];
-    }else{
-        [req setValue:[NSString stringWithFormat:@"%d",_depth] forHTTPHeaderField:@"Depth"];
-    }
     
+    [req setValue:[self depthHeaderValue] forHTTPHeaderField:@"Depth"];
     [req setValue:@"application/xml" forHTTPHeaderField:@"Content-Type"];
 //	[req setValue:nil forHTTPHeaderField:@"Content-Length"];
     [req setValue:@"close" forHTTPHeaderField:@"Connection"];
@@ -64,7 +62,14 @@
             [item setRootURL:self.rootURL];
 //            NSLog(@"path:%@,   rel:%@",self.path,item.relativeHref);
 //            NSLog(@"type:%@",item.contentType);
-            if (![item.relativeHref isEqualToString:self.relativePath]) {
+            
+            if (_depth==LEOWebDAVPropertyRequestDepthOnlyChildrenFirstLevel || _depth==LEOWebDAVPropertyRequestDepthOnlyChildrenInfinityLevel)
+            {
+                if ( ![self comparePath1:item.relativeHref path2:self.relativePath] )
+                    [result addObject:item];
+            }
+            else
+            {
                 [result addObject:item];
             }
         }
@@ -73,6 +78,38 @@
 }
 
 #pragma mark - Private method
+
+-(NSString*)depthHeaderValue
+{
+    switch ( _depth )
+    {
+        case LEOWebDAVPropertyRequestDepthOnlyRequestItem:
+            return @"0";
+            
+        case LEOWebDAVPropertyRequestDepthOnlyChildrenFirstLevel:
+            return @"1";
+        
+        case LEOWebDAVPropertyRequestDepthAll:
+        case LEOWebDAVPropertyRequestDepthOnlyChildrenInfinityLevel:
+        default:
+            return @"infinity";
+    }
+}
+
+-(BOOL)comparePath1:(NSString*)path1 path2:(NSString*)path2
+{
+    NSMutableString *mPath1 = [path1 mutableCopy];
+    NSMutableString *mPath2 = [path2 mutableCopy];
+    
+    if (path1.length>1 && [path1 hasSuffix:@"/"])
+        [mPath1 deleteCharactersInRange:NSMakeRange(path1.length-1, 1)];
+
+    if (path2.length>1 && [path2 hasSuffix:@"/"])
+        [mPath2 deleteCharactersInRange:NSMakeRange(path2.length-1, 1)];
+    
+    return [mPath1 isEqualToString:mPath2];
+}
+
 -(NSData *)generateBody{
     NSMutableString* o = [NSMutableString string];
 	[o appendString:@"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"];

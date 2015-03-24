@@ -35,7 +35,12 @@
     
     self=[super init];
     if(self){
-        _rootURL=[url copy];
+        NSString *path = url.path;
+        
+        if (!path || !path.length)
+            path = @"/";
+        
+        _rootURL=[[NSURL alloc] initWithScheme:url.scheme host:url.host.lowercaseString path:path];
         _userName=[name copy];
         _password=[password copy];
         _allowUntrusedCertificate=NO;
