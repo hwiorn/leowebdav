@@ -30,7 +30,7 @@
 - (NSURLRequest *)request {
 	NSParameterAssert(_uploadData != nil);
 	
-	NSString *len = [NSString stringWithFormat:@"%d", [_uploadData length]];
+	NSString *len = [NSString stringWithFormat:@"%d", (int)[_uploadData length]];
     NSLog(@"upload len:%@",len);
 	
 	NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PUT"];

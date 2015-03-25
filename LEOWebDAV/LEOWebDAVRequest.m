@@ -20,6 +20,7 @@
     BOOL _executing;
     long long _contentLength;
     long long _currentLength;
+    long long _requestBodyLength;
 }
 @end
 
@@ -114,8 +115,11 @@
 	}
 	[self willChangeValueForKey:@"isExecuting"];
 	
+    NSURLRequest *request = [self request];
+
+    _requestBodyLength = (request.HTTPBody==nil) ? 0 : request.HTTPBody.length;
 	_executing = YES;
-	_connection = [NSURLConnection connectionWithRequest:[self request]
+	_connection = [NSURLConnection connectionWithRequest:request
 												delegate:self];
 	
 	if ([_delegate respondsToSelector:@selector(requestDidBegin:)])
@@ -242,7 +246,9 @@
 - (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten totalBytesWritten:(NSInteger)totalBytesWritten totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite
 {
     if(_delegate!=nil && [_delegate respondsToSelector:@selector(request:didSendBodyData:)]) {
-        [_delegate request:self didSendBodyData:bytesWritten];
+        float percent = (_requestBodyLength==0) ? 0 : ((float)totalBytesWritten / _requestBodyLength);
+        //NSLog(@"writen: %d, total: %d, percent: %f", (int)totalBytesWritten, (int)_requestBodyLength, percent);
+        [_delegate request:self didSendBodyData:percent];
 	}
 }
 @end

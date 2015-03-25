@@ -35,5 +35,5 @@
 @optional
 - (void)requestDidBegin:(LEOWebDAVRequest *)request;
 - (void)request:(LEOWebDAVRequest *)request didReceivedProgress:(float)percent;
-- (void)request:(LEOWebDAVRequest *)request didSendBodyData:(NSUInteger)percent;
+- (void)request:(LEOWebDAVRequest *)request didSendBodyData:(float)percent;
 @end
