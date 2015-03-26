@@ -34,4 +34,9 @@
     return req;
 }
 
+- (id)resultForData:(NSData *)data
+{
+    return data;
+}
+
 @end
