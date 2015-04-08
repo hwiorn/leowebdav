@@ -35,12 +35,10 @@
     
     self=[super init];
     if(self){
-        NSString *path = url.path;
+        NSURLComponents *fixedURL = [NSURLComponents componentsWithString:url.absoluteString];
+        fixedURL.host = url.host.lowercaseString;
         
-        if (!path || !path.length)
-            path = @"/";
-        
-        _rootURL=[[NSURL alloc] initWithScheme:url.scheme host:url.host.lowercaseString path:path];
+        _rootURL=fixedURL.URL;
         _userName=[name copy];
         _password=[password copy];
         _allowUntrusedCertificate=NO;
