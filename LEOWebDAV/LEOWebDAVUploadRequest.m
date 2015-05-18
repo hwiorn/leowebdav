@@ -7,11 +7,11 @@
 //
 
 #import "LEOWebDAVUploadRequest.h"
-@interface LEOWebDAVUploadRequest ()
+@interface LEOWebDAVUploadRequest () <NSURLConnectionDataDelegate>
 {
     NSData *_uploadData;
     NSString *_mimeType;
-    NSInputStream *_inputStream;
+    NSURL *_fileURL;
     long long _dataSize;
 }
 @end
@@ -32,12 +32,12 @@
     return self;
 }
 
--(instancetype)initWithPath:(NSString *)thePath inputStream:(NSInputStream *)stream size:(long long)size
+-(instancetype)initWithPath:(NSString *)thePath fileURL:(NSURL *)url size:(long long)size
 {
     self=[super initWithPath:thePath];
     if(self){
         self.dataMimeType=@"application/octet-stream";
-        _inputStream = stream;
+        _fileURL = url;
         _dataSize = size;
     }
     return self;
@@ -49,11 +49,11 @@
     NSLog(@"upload len:%@",len);
     
 	NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PUT"];
-    [req setValue:self.dataMimeType forHTTPHeaderField:@"Content-Type"];
+//    [req setValue:self.dataMimeType forHTTPHeaderField:@"Content-Type"];
     [req setValue:len forHTTPHeaderField:@"Content-Length"];
-    if (_inputStream)
+    if (_fileURL)
     {
-        [req setHTTPBodyStream:_inputStream];
+        [req setHTTPBodyStream:[[NSInputStream alloc] initWithURL:_fileURL]];
     }
     else
     {
@@ -61,6 +61,11 @@
     }
     
 	return req;
+}
+
+-(NSInputStream *)connection:(NSURLConnection *)connection needNewBodyStream:(NSURLRequest *)request
+{
+    return [[NSInputStream alloc] initWithURL:_fileURL];
 }
 
 -(id)resultForData:(NSData *)data

@@ -13,5 +13,5 @@
 @property (copy) NSString *dataMimeType;
 
 -(instancetype)initWithPath:(NSString *)thePath andData:(NSData *)data;
--(instancetype)initWithPath:(NSString *)thePath inputStream:(NSInputStream *)stream size:(long long)size;
+-(instancetype)initWithPath:(NSString *)thePath fileURL:(NSURL *)url size:(long long)size;
 @end
