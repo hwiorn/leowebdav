@@ -17,7 +17,6 @@
 @end
 @implementation LEOWebDAVUploadRequest
 
-@synthesize data=_uploadData;
 @synthesize dataMimeType=_mimeType;
 
 -(instancetype)initWithPath:(NSString *)thePath andData:(NSData *)data
@@ -25,8 +24,8 @@
     self=[super initWithPath:thePath];
     if(self){
         self.dataMimeType=@"application/octet-stream";
-        NSParameterAssert(_uploadData != nil);
-        self.data = data;
+        NSParameterAssert(data != nil);
+        _uploadData = data;
         _dataSize = [data length];
     }
     return self;
@@ -36,6 +35,7 @@
 {
     self=[super initWithPath:thePath];
     if(self){
+        NSParameterAssert(url != nil);
         self.dataMimeType=@"application/octet-stream";
         _fileURL = url;
         _dataSize = size;

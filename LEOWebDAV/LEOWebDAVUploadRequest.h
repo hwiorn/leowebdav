@@ -9,7 +9,6 @@
 #import "LEOWebDAVRequest.h"
 
 @interface LEOWebDAVUploadRequest : LEOWebDAVRequest
-@property (strong) NSData *data;
 @property (copy) NSString *dataMimeType;
 
 -(instancetype)initWithPath:(NSString *)thePath andData:(NSData *)data;
