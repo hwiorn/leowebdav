@@ -117,7 +117,8 @@
 	
     NSURLRequest *request = [self request];
 
-    _requestBodyLength = (request.HTTPBody==nil) ? 0 : request.HTTPBody.length;
+    _requestBodyLength = [[request valueForHTTPHeaderField:@"Content-Length"] longLongValue];
+    
 	_executing = YES;
 	_connection = [NSURLConnection connectionWithRequest:request
 												delegate:self];

@@ -7,38 +7,65 @@
 //
 
 #import "LEOWebDAVUploadRequest.h"
-@interface LEOWebDAVUploadRequest ()
+@interface LEOWebDAVUploadRequest () <NSURLConnectionDataDelegate>
 {
     NSData *_uploadData;
     NSString *_mimeType;
+    NSURL *_fileURL;
+    long long _dataSize;
 }
 @end
 @implementation LEOWebDAVUploadRequest
 
-@synthesize data=_uploadData;
 @synthesize dataMimeType=_mimeType;
 
--(id)initWithPath:(NSString *)thePath
+-(instancetype)initWithPath:(NSString *)thePath andData:(NSData *)data
 {
     self=[super initWithPath:thePath];
     if(self){
         self.dataMimeType=@"application/octet-stream";
+        NSParameterAssert(data != nil);
+        _uploadData = data;
+        _dataSize = [data length];
+    }
+    return self;
+}
+
+-(instancetype)initWithPath:(NSString *)thePath fileURL:(NSURL *)url size:(long long)size
+{
+    self=[super initWithPath:thePath];
+    if(self){
+        NSParameterAssert(url != nil);
+        self.dataMimeType=@"application/octet-stream";
+        _fileURL = url;
+        _dataSize = size;
     }
     return self;
 }
 
 - (NSURLRequest *)request {
-	NSParameterAssert(_uploadData != nil);
 	
-	NSString *len = [NSString stringWithFormat:@"%d", (int)[_uploadData length]];
+    NSString *len = [NSString stringWithFormat:@"%lld", (long long)_dataSize];
     NSLog(@"upload len:%@",len);
-	
+    
 	NSMutableURLRequest *req = [self newRequestWithPath:self.path method:@"PUT"];
-	[req setValue:self.dataMimeType forHTTPHeaderField:@"Content-Type"];
-	[req setValue:len forHTTPHeaderField:@"Content-Length"];
-	[req setHTTPBody:_uploadData];
-	
+//    [req setValue:self.dataMimeType forHTTPHeaderField:@"Content-Type"];
+    [req setValue:len forHTTPHeaderField:@"Content-Length"];
+    if (_fileURL)
+    {
+        [req setHTTPBodyStream:[[NSInputStream alloc] initWithURL:_fileURL]];
+    }
+    else
+    {
+        [req setHTTPBody:_uploadData];
+    }
+    
 	return req;
+}
+
+-(NSInputStream *)connection:(NSURLConnection *)connection needNewBodyStream:(NSURLRequest *)request
+{
+    return [[NSInputStream alloc] initWithURL:_fileURL];
 }
 
 -(id)resultForData:(NSData *)data
