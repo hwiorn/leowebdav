@@ -153,9 +153,7 @@
     if([thePath hasPrefix:relativeRoot]) {
         temp = [temp substringFromIndex:relativeRoot.length];
     }
-    if([temp rangeOfString:@"%"].length == 0) {
-        temp = [temp stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-    }
+    temp = [temp stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     _relativePath=[[NSString alloc] initWithFormat:@"%@",temp];
     return [[self.rootURL absoluteString] stringByAppendingString:_relativePath];
 }
