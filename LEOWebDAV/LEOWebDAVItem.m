@@ -66,7 +66,7 @@
 
 -(NSString*)displayName {
 	if(displayName == nil || displayName.length == 0) {
-		return [[href lastPathComponent] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+		return href.lastPathComponent;
 	} else {
 		return displayName;
 	}
