@@ -21,6 +21,7 @@
 @property(assign) SEL successAction;
 @property(assign) SEL receiveAction;
 @property(assign) SEL startAction;
+@property(nonatomic, strong) NSString *tmpPath;
 
 -(id)initWithPath:(NSString *)thePath;
 -(NSURLRequest *)request;

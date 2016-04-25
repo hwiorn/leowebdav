@@ -21,6 +21,8 @@
     long long _contentLength;
     long long _currentLength;
     long long _requestBodyLength;
+    
+    NSFileHandle *_fileHandle;
 }
 @end
 
@@ -76,6 +78,7 @@
 	
 	[_connection cancel];
 	_cancelled = YES;
+    [_fileHandle closeFile];
 	
     NSString *errorLocalDes=nil;
     if (code==403) {
@@ -172,13 +175,22 @@
 }
 #pragma mark - Connection Delegate
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
-	[_data appendData:data];
+    if (_data)
+    {
+        [_data appendData:data];
+    }
+    else if (_fileHandle)
+    {
+        [_fileHandle writeData:data];
+    }
+	
     _currentLength+=data.length;
     if(_delegate!=nil && [_delegate respondsToSelector:@selector(request:didReceivedProgress:)]) {
         [_delegate request:self didReceivedProgress:(float)_currentLength/_contentLength];
 	}
 }
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
+    [_fileHandle closeFile];
 	[self didFail:error];
 }
 
@@ -192,9 +204,21 @@
 			[self cancelWithCode:code];
             return;
 		}
-        _data = nil;
-        _data = [[NSMutableData alloc] init];
-        [_data setLength:0];
+        if (_tmpPath)
+        {
+            _fileHandle = [NSFileHandle fileHandleForWritingAtPath:_tmpPath];
+            if (_fileHandle == nil)
+            {
+                [[NSFileManager defaultManager] createFileAtPath:_tmpPath contents:nil attributes:nil];
+                _fileHandle = [NSFileHandle fileHandleForWritingAtPath:_tmpPath];
+            }
+        }
+        else
+        {
+            _data = nil;
+            _data = [[NSMutableData alloc] init];
+            [_data setLength:0];
+        }
         _contentLength = [response expectedContentLength];
         _currentLength = 0.0;
         
@@ -205,7 +229,9 @@
 }
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
-	if ( _delegate!=nil && [_delegate respondsToSelector:@selector(request:didSucceedWithResult:)]) {
+	
+    [_fileHandle closeFile];
+    if ( _delegate!=nil && [_delegate respondsToSelector:@selector(request:didSucceedWithResult:)]) {
 		id result = [self resultForData:_data];
 		
 		[_delegate request:self didSucceedWithResult:result];
